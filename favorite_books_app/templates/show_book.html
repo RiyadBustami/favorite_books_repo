@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <title>FavoriteBooks®</title>
+</head>
+
+<body>
+    <header class="border-bottom border-5 justify-content-between">
+        <div class=" row text-first m-2 justify-content-between">
+            <h1 class="col-10 fw-bolder fs-1 text-dark">
+                <a href="/" style="text-decoration: inherit;color: inherit;">
+                    FavoriteBooks®
+                </a>
+            </h1>
+            <div class="col-1 text-center mx-5">
+                <p class="row my-1 text-nowrap">Welcome {{logged_user.first_name}}!</p>
+                <a href="/logout/" class="row link-danger text-end  fs-6">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="row">
+        <section class="col border-end border-bottom border-1">
+            {% if book.uploaded_by.id == request.session.id %}
+            <div class="m-4">
+                <form action="update_book/" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <input type="text" name="title" id="title" value="{{book.title}}" class="form-control">
+                    <p>Added by: {{book.uploaded_by.first_name}} {{book.uploaded_by.last_name}} </p>
+                    <p>Added on: {{book.created_at}}</p>
+                    <p>Last updated on: {{book.updated_at}}</p>
+                    <label for="desc" class="form-label">Description:</label>
+                    <textarea name="desc" id="desc" cols="20" rows="4" class="form-control">{{book.desc}}</textarea>
+                    <input type="submit" value="Update" class="btn btn-primary m-3">
+                </form>
+                <form action="delete/" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <input type="submit" class="btn btn-outline-danger" value="Delete">
+                </form>
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="m-4">
+                <h3>{{book.title}}</h3>
+                <p>Added by: {{book.uploaded_by.first_name}} {{book.uploaded_by.last_name}} </p>
+                <p>Added on: {{book.created_at}}</p>
+                <p>Last updated on: {{book.updated_at}}</p>
+                <p>Description: <span>{{book.desc}}</span></p>
+            </div>
+            {% endif %}
+        </section>
+        <section class="col border-start border-bottom border-1">
+            <div class="m-4">
+                <h3>Users Who Like This Book:</h3>
+                <ul>
+                    {% for user in book.users_who_like.all %}
+                    <li>
+                        <p class="d-inline">{{user.first_name}} {{user.last_name}}</p>
+                        {% if user.id == request.session.id %}
+                        <form action="unfavorite_book/" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="submit" value="Un-Favorite" class="btn btn-outline-danger btn-sm mx-2">
+                        </form>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if not logged_user in book.users_who_like.all %}
+                <form action="add_book_to_favorites/" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <input type="submit" value="Add to Favorites" class="btn btn-outline-danger btn-sm mx-2">
+                </form>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>
